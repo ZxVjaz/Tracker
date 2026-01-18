@@ -109,6 +109,18 @@ WindUI:Notify({
     Icon = "cloud-check",
 })
 
+-- AntiAFK
+local VirtualUser = game:GetService("VirtualUser")
+local AntiAFK_Enabled = true
+
+LocalPlayer.Idled:Connect(function()
+    if AntiAFK_Enabled then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new(0, 0))
+    else
+    end
+end)
+
 -- ========== Tabs ==========
 local AboutTab = Window:Tab({
     Title = "About",
@@ -254,7 +266,7 @@ local MapCheckpoints = {
         }
     },
     ["Street Race"] = {
-        DelayPerCheckpoint = 5.6,
+        DelayPerCheckpoint = 4,
         Points = {
             CFrame.new(-9639.3887, -18.2280, 3373.9382),
             CFrame.new(-9590.3076, -18.2202, 3112.3269),
