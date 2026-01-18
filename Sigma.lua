@@ -63,7 +63,7 @@ Window:EditOpenButton({
 local Stats = game:GetService("Stats")
 local RunService = game:GetService("RunService")
 
-local version = "2.1" 
+local version = "2.2" 
 local fps = 0
 local ping = 0
 
@@ -266,7 +266,7 @@ local MapCheckpoints = {
         }
     },
     ["Street Race"] = {
-        DelayPerCheckpoint = 4,
+        DelayPerCheckpoint = 5.6,
         Points = {
             CFrame.new(-9639.3887, -18.2280, 3373.9382),
             CFrame.new(-9590.3076, -18.2202, 3112.3269),
