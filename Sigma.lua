@@ -113,7 +113,7 @@ WindUI:Notify({
 local VirtualUser = game:GetService("VirtualUser")
 local AntiAFK_Enabled = true
 
-LocalPlayer.Idled:Connect(function()
+player.Idled:Connect(function()
     if AntiAFK_Enabled then
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new(0, 0))
