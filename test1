@@ -1,0 +1,1110 @@
+-- ======= Library =======
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- ======= Library Setting =======
+WindUI:SetNotificationLower(true)
+
+-- ======= Variabel =======
+local Stats = game:GetService("Stats")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local humanoidroot = character:WaitForChild("HumanoidRootPart")
+local vehicleFolder = player:WaitForChild("Vehicle")
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = newChar:WaitForChild("Humanoid")
+    humanoidroot = newChar:WaitForChild("HumanoidRootPart")
+end)
+local function GetDriveSeat()
+    if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+        return humanoid.SeatPart
+    end
+    return nil
+end
+
+-- ======= WindUI Add Theme =======
+WindUI:AddTheme({
+    Name = "Monokai Pro Test",
+    Accent = Color3.fromHex("#fc9867"),
+    Dialog = Color3.fromHex("#1e1e1e"),
+    Outline = Color3.fromHex("#78dce8"),
+    Text = Color3.fromHex("#fcfcfa"),
+    Placeholder = Color3.fromHex("#6f6f6f"),
+    Background = Color3.fromHex("#191622"),
+    Button = Color3.fromHex("#ab9df2"),
+    Icon = Color3.fromHex("#a9dc76"),
+})
+
+-- ======= Key System =======
+WindUI.Services.CustomKey = {
+    Name = "Link Discord to See Key",
+    Icon = "copy",
+    Args = { "CorrectKey" },
+    New = function(CorrectKey)
+        local function validateKey(user_input)
+
+            if user_input == CorrectKey then
+                return true, "Key Berhasil! Selamat Datang."
+            else
+                return false, "Key Salah! Silahkan ambil di Discord."
+            end
+        end
+
+        local function copyLink()
+            setclipboard("https://discord.gg/6AKuWmAgw7")
+            return "Link Discord dicopy!"
+        end
+
+        return {
+            Verify = validateKey,
+            Copy = copyLink
+        }
+    end
+}
+
+-- ======= Create Window =======
+local Window = WindUI:CreateWindow({
+    Title = "The Ride",
+    Icon = "rbxassetid://133739520556173",
+    Author = "NusantaBlox",
+    Folder = "Nusantablox",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Monokai Pro Test",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.6,
+    HideSearchBar = true,
+    ScrollBarEnabled = false,
+
+    User = {
+        Enabled = true,
+        Anonymous = false,
+    },
+
+    KeySystem = {
+        Note = "Info Key in Discord | Click Get Key to copy Discord Server",
+        API = {
+            {
+                Type = "CustomKey",
+                CorrectKey = "NusantaBlox2026",
+            },
+        },
+    },
+})
+
+-- ======= Set Edit Open Button =======
+Window:EditOpenButton({
+    Enabled = true,
+})
+
+-- ======= Tag Here =======
+local version = "3.2"
+local fps = 0
+local ping = 0
+
+local StatsTag = Window:Tag({
+    Title = "Loading...",
+    Color = Color3.fromHex("#30FF6A"),
+    Radius = 13,
+})
+
+local frames = 0
+local last = os.clock()
+
+RunService.RenderStepped:Connect(function()
+    frames = frames + 1
+    local now = os.clock()
+
+    if now - last >= 1 then
+        fps = frames
+        frames = 0
+        last = now
+
+        local item = Stats.Network.ServerStatsItem:FindFirstChild("Data Ping")
+        if item then
+            ping = math.floor(item:GetValue())
+        end
+
+        StatsTag:SetTitle(string.format("v%s | Ping: %d | FPS: %d", version, ping, fps))
+    end
+end)
+
+Window:Tag({
+    Title = "Developer",
+    Color = Color3.fromHex("#ff0000"),
+    Radius = 13,
+})
+
+-- First Notify
+WindUI:Notify({
+    Title = "Connection Info!",
+    Content = "Script Succesfuly Loaded!",
+    Duration = 3,
+    Icon = "cloud-check",
+})
+WindUI:Notify({
+    Title = "Menu keybind",
+    Content = "Press k to open/close menu",
+    Duration = 4,
+    Icon = "cloud-check",
+})
+
+-- AntiAFK
+local VirtualUser = game:GetService("VirtualUser")
+local AntiAFK_Enabled = true
+
+player.Idled:Connect(function()
+    if AntiAFK_Enabled then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new(0, 0))
+    else
+    end
+end)
+
+-- ======= Tabs =======
+local AboutTab = Window:Tab({
+    Title = "About",
+    Icon = "info",
+    Locked = false,
+})
+Window:Divider()
+local MainTab = Window:Tab({
+    Title = "Main",
+    Icon = "crown",
+    Locked = false,
+})
+local BikeTab = Window:Tab({
+    Title = "Bike",
+    Icon = "motorbike",
+    Locked = false,
+})
+local AttributeTab = Window:Tab({
+    Title = "Attribute",
+    Icon = "braces",
+    Locked = false,
+})
+local DevTab = Window:Tab({
+    Title = "Developer",
+    Icon = "skull",
+    Locked = false,
+})
+local ClientTab = Window:Tab({
+    Title = "Client",
+    Icon = "proportions",
+    Locked = false,
+})
+AboutTab:Select()
+
+-- ======= AboutTab =======
+local InviteCode = "6AKuWmAgw7"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+local Response = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+    Url = DiscordAPI,
+    Method = "GET",
+    Headers = {
+        ["User-Agent"] = "RobloxBot/1.0",
+        ["Accept"] = "application/json"
+    }
+}).Body)
+
+if Response and Response.guild then
+    local DiscordInfo = AboutTab:Paragraph({
+        Title = "NusantaBlox | Indonesia Hub",
+        Desc = 
+            ' <font color="#52525b">•</font> Member Count : ' .. tostring(Response.approximate_member_count) .. 
+            '\n <font color="#16a34a">•</font> Online Count : ' .. tostring(Response.approximate_presence_count)
+        ,
+        Image = "https://cdn.discordapp.com/icons/" .. Response.guild.id .. "/" .. Response.guild.icon .. ".png?size=1024",
+        ImageSize = 42,
+    })
+
+    AboutTab:Button({
+        Title = "Update Info",
+        Callback = function()
+            local UpdatedResponse = game:GetService("HttpService"):JSONDecode(WindUI.Creator.Request({
+                Url = DiscordAPI,
+                Method = "GET",
+            }).Body)
+            if UpdatedResponse and UpdatedResponse and UpdatedResponse.guild then
+                DiscordInfo:SetDesc(
+                    ' <font color="#52525b">•</font> Member Count : ' .. tostring(UpdatedResponse.approximate_member_count) .. 
+                    '\n <font color="#16a34a">•</font> Online Count : ' .. tostring(UpdatedResponse.approximate_presence_count)
+                )
+            end
+        end
+    })
+else
+    AboutTab:Paragraph({
+        Title = "Error when receiving information about the Discord server",
+        Desc = game:GetService("HttpService"):JSONEncode(Response),
+        Image = "triangle-alert",
+        ImageSize = 26,
+        Color = "Red",
+    })
+end
+AboutTab:Divider()
+AboutTab:Paragraph({
+    Title = "Offcial Website",
+    Desc = "Copy and paste to browser, you cant get Key in website.",
+    Image = "https://i.ibb.co.com/XrCRJ16f/Nusantablox.jpg",
+    ImageSize = 30,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function() 
+                setclipboard("https://jnkie.com/overview/nusantablox-hub")
+            end,
+        }
+    }
+})
+AboutTab:Paragraph({
+    Title = "Discord",
+    Desc = "Join discord for more script and more Info",
+    Image = "https://i.pinimg.com/736x/b5/d4/ce/b5d4ce10a744861ffd3314d20d116976.jpg",
+    ImageSize = 30,
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Copy Link",
+            Callback = function()
+                setclipboard("https://discord.gg/6AKuWmAgw7")
+            end,
+        }
+    }
+})
+
+-- ========== Main Tab ==========
+MainTab:Section({ 
+    Title = "AutoFarm Race",
+})
+
+-- AutoFarm
+local AutoFarmStatus = false
+local AutoFarmPlace = "Loop Race"
+
+local AutoFarmPlaceSelect = MainTab:Dropdown({
+    Title = "Select Race",
+    Values = { "Loop Race", "Street Race",},
+    Value = "Loop Race",
+    Callback = function(option)
+        AutoFarmPlace = option
+    end
+})
+
+local AutoFarmStatusInfo = MainTab:Toggle({
+    Title = "AutoFarm",
+    Value = false,
+    Callback = function(state)
+        AutoFarmStatus = state
+    end
+})
+
+local MapCheckpoints = {
+    ["Loop Race"] = {
+        DelayPerCheckpoint = 5.6,
+        Points = {
+            CFrame.new(-10492.0273, -18.2218819, 2366.24316),
+            CFrame.new(-10354.165, -18.2058296, 2470.74634),
+            CFrame.new(-10349.584, -18.2273083, 3891.85059),
+            CFrame.new(-12324.3223, -17.9381466, 4022.28931),
+            CFrame.new(-13379.9736, -18.165947, 3232.9082),
+            CFrame.new(-12934.2783, -18.165144, 2296.42969),
+            CFrame.new(-12355.708, -18.1686764, 1458.0094),
+            CFrame.new(-12001.9102, -18.1633301, 763.873474),
+            CFrame.new(-11117.7227, -18.1748409, 1171.28674),
+            CFrame.new(-10799.5469, -18.218626, 2182.94995),
+        }
+    },
+    ["Street Race"] = {
+        DelayPerCheckpoint = 5.6,
+        Points = {
+            CFrame.new(-9639.3887, -18.2280, 3373.9382),
+            CFrame.new(-9590.3076, -18.2202, 3112.3269),
+            CFrame.new(-10349.5186, -18.1900, 3020.2122),
+            CFrame.new(-10331.3096, -18.2223, 2510.6306),
+            CFrame.new(-9762.4893, -18.2062, 2483.5737),
+            CFrame.new(-9783.8828, -18.2505, 2262.1150),
+            CFrame.new(-9947.1221, 29.5493, 1654.3998),
+            CFrame.new(-9941.9785, 29.5522, 2129.3860),
+            CFrame.new(-10009.6904, 29.5561, 3505.7451),
+            CFrame.new(-9707.7773, -16.1217, 3690.3777),
+        }
+    }
+}
+
+local function TeleportVehicle(targetCFrame)
+    if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+        local vehicle = humanoid.SeatPart.Parent
+
+        if vehicle.PrimaryPart then
+            vehicle.PrimaryPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            vehicle.PrimaryPart.AssemblyAngularVelocity = Vector3.new(0,0,0)
+        end
+
+        vehicle:PivotTo(targetCFrame)
+        return true
+    else
+        return false
+    end
+end
+
+-- MileFarm
+MainTab:Section({ 
+    Title = "MileFarm",
+})
+
+local MileFarmStatus = false
+local MileFarmInterval = 5 
+local MileFarmCFrame = CFrame.new(-15999.4668, 36.2337, -5.6626, -0.9386, 0.0069, 0.3449, -0.0000, 0.9998, -0.0200, -0.3449, -0.0188, -0.9384)
+local FarmCurrentSpeed = 0
+local FarmMaxSpeed = 366
+local FarmAccel = 1
+
+local function FarmTeleport()
+    if humanoid and humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+        local vehicle = humanoid.SeatPart.Parent
+        if vehicle.PrimaryPart then
+            vehicle.PrimaryPart.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            vehicle.PrimaryPart.AssemblyAngularVelocity = Vector3.new(0,0,0)
+        end
+        vehicle:PivotTo(MileFarmCFrame)
+    end
+end
+
+local MileFarmStatusInfo = MainTab:Toggle({
+    Title = "MileFarm",
+    Value = false,
+    Callback = function(state) 
+        MileFarmStatus = state
+        if state then
+            FarmTeleport()
+        else
+            FarmCurrentSpeed = 0
+        end
+    end
+})
+
+-- ========== Bike Tab ==========
+-- Section
+BikeTab:Section({
+    Title = "Speed Boost",
+})
+
+-- Speed Boost
+local SpeedBoostMaxSpeed = 100
+local SpeedBoostAcceleration = 10
+local SpeedBoostCurrentSpeed = 0
+local SpeedBoostStatus = false
+local AutoGasStatus = false
+
+local SpeedBoostMaxSpeedSlider = BikeTab:Slider({
+    Title = "Max Speed",
+    Desc = "How fast your bike can go",
+    Value = {Min = 1, Max = 600, Default = 100,},
+    Callback = function(value)
+        SpeedBoostMaxSpeed = value
+    end
+})
+
+local SpeedBoostAccelerationSlider = BikeTab:Slider({
+    Title = "Acceleration",
+    Desc = "Power to reach max speed",
+    Value = {Min = 1, Max = 30, Default = 21,},
+    Callback = function(value)
+        SpeedBoostAcceleration = 31 - value
+    end
+})
+
+local SpeedBoostStatusInfo = BikeTab:Toggle({
+    Title = "Speed Boost",
+    Value = false,
+    Callback = function(state)
+        SpeedBoostStatus = state
+    end
+})
+
+local AutoGasStatusInfo = BikeTab:Toggle({
+    Title = "AutoGas",
+    Value = false,
+    Callback = function(state)
+        AutoGasStatus = state
+    end
+})
+
+-- Section
+BikeTab:Section({
+    Title = "Brake Boost",
+})
+
+-- Brake Boost
+local BrakeBoost = 10
+local BrakeBoostStatus = false
+
+local BrakeBoostSlider = BikeTab:Slider({
+    Title = "Brake Boost Power",
+    Value = {Min = 1, Max = 100, Default = 10,},
+    Callback = function(value)
+        BrakeBoost = value
+    end
+})
+
+local BrakeBoostStatusInfo = BikeTab:Toggle({
+    Title = "Brake Boost",
+    Value = false,
+    Callback = function(state)
+        BrakeBoostStatus = state
+    end
+})
+
+-- ========== Attribute Tab ==========
+local SelectedBike = "not detected"
+local setbrakepower = "not detected"
+local setbrakeratio = "not detected"
+local setdampening = "not detected"
+local sethorsepower = "not detected"
+local setquickshifter = "not detected"
+local settiregrip = "not detected"
+local settopspeed = "not detected"
+local defaultbrakepower = "not detected"
+local defaultbrakeratio = "not detected"
+local defaultdampening = "not detected"
+local defaulthorsepower = "not detected"
+local defaultquickshifter = "not detected"
+local defaulttiregrip = "not detected"
+local defaulttopspeed = "not detected"
+
+local function getBikeNames()
+    local bikeList = {}
+    for _, bike in ipairs(vehicleFolder:GetChildren()) do
+        table.insert(bikeList, bike.Name)
+    end
+    return bikeList
+end
+
+local function SetAttMotor(AttributeName, NewValue)    
+    --Get Object
+    local Vehicle = player:FindFirstChild("Vehicle")
+    local Motornya = Vehicle:FindFirstChild(SelectedBike)
+    if Motornya then
+        --Set Attribute
+        Motornya:SetAttribute(AttributeName, NewValue)
+    end
+end
+
+local function GetAttMotor(AttributeName)
+    --Get Object
+    local Vehicle = player:FindFirstChild("Vehicle")
+    local Motornya = Vehicle:FindFirstChild(SelectedBike)
+    if Motornya then
+        --Get Attribute
+       local entry = Motornya:GetAttribute(AttributeName)
+       return entry or 0
+    end
+end
+
+local AttributeParagraph = AttributeTab:Paragraph({
+    Title = "Bike: " .. SelectedBike,
+    Desc = "Brakepower  : " .. setbrakepower ..
+           "\nBrakeratio  : " .. setbrakeratio ..
+           "\nDampening   : " .. setdampening ..
+           "\nHorsepower  : " .. sethorsepower ..
+           "\nQuickshifter: " .. setquickshifter .. 
+           "\nTiregrip    : " .. settiregrip ..
+           "\nTopspeed    : " .. settopspeed
+})
+
+local setbrakepowerslider = AttributeTab:Slider({
+    Title = "Brakepower",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 5,
+        Default = 1,
+    },
+    Callback = function(value)
+        setbrakepower = value
+    end
+})
+
+local setbrakeratioslider = AttributeTab:Slider({
+    Title = "Brakeratio",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 100,
+        Default = 1,
+    },
+    Callback = function(value)
+        setbrakeratio = value
+    end
+})
+
+local setdampeningslider = AttributeTab:Slider({
+    Title = "Dampening",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 80,
+        Default = 1,
+    },
+    Callback = function(value)
+        setdampening = value
+    end
+})
+
+local sethorsepowerslider = AttributeTab:Slider({
+    Title = "Horsepower",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 6,
+        Default = 1,
+    },
+    Callback = function(value)
+        sethorsepower = value
+    end
+})
+
+local setquickshifterslider = AttributeTab:Slider({
+    Title = "Quickshifter",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 5,
+        Default = 1,
+    },
+    Callback = function(value)
+        setquickshifter = value
+    end
+})
+
+local settiregripslider = AttributeTab:Slider({
+    Title = "Tiregrip",
+    Step = 0.1,
+    Value = {
+        Min = 0,
+        Max = 2,
+        Default = 1,
+    },
+    Callback = function(value)
+        settiregrip = value
+    end
+})
+
+local settopspeedslider = AttributeTab:Slider({
+    Title = "Topspeed",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 6,
+        Default = 1,
+    },
+    Callback = function(value)
+        settopspeed = value
+    end
+})
+
+local SetAttributeButton = AttributeTab:Button({
+    Title = "Set Attribute",
+    Locked = false,
+    Callback = function()
+        if SelectedBike ~= "not detected" then
+            WindUI:Notify({
+                Title = "Attribute",
+                Content = "Respawn your bike to take effect",
+                Duration = 3,
+                Icon = "check",
+            })
+            SetAttMotor("BrakePower", setbrakepower)
+            SetAttMotor("BrakeRatio", setbrakeratio) 
+            SetAttMotor("Dampening", setdampening) 
+            SetAttMotor("Horsepower", sethorsepower) 
+            SetAttMotor("QuickShifter", setquickshifter)
+            SetAttMotor("TireGrip", settiregrip) 
+            SetAttMotor("TopSpeed", settopspeed)
+            setbrakepower = GetAttMotor("BrakePower") 
+            setbrakeratio = GetAttMotor("BrakeRatio")
+            setdampening = GetAttMotor("Dampening")
+            sethorsepower = GetAttMotor("Horsepower")
+            setquickshifter = GetAttMotor("QuickShifter")
+            settiregrip = GetAttMotor("TireGrip") 
+            settopspeed = GetAttMotor("TopSpeed")
+            AttributeParagraph:SetTitle("Bike: " .. SelectedBike)
+            AttributeParagraph:SetDesc(
+                "Brakepower  : " .. setbrakepower ..
+                                       "\nBrakeratio  : " .. setbrakeratio ..
+                                       "\nDampening   : " .. setdampening ..
+                                       "\nHorsepower  : " .. sethorsepower ..
+                                       "\nQuickshifter: " .. setquickshifter .. 
+                                       "\nTiregrip    : " .. settiregrip ..
+                                       "\nTopspeed    : " .. settopspeed)
+        else
+            WindUI:Notify({
+                Title = "Attribute",
+                Content = "Please select bike first",
+                Duration = 3,
+                Icon = "triangle-alert",
+            }) 
+        end
+    end
+})
+
+local DefaultAttributeButton = AttributeTab:Button({
+    Title = "Reset Attribute",
+    Desc = "Set your attribute to default",
+    Locked = false,
+    Callback = function()
+        if SelectedBike ~= "not detected" then
+            WindUI:Notify({
+                Title = "Attribute Reseted",
+                Content = "Respawn your bike to take effect",
+                Duration = 3,
+                Icon = "check",
+            })
+            SetAttMotor("BrakePower", defaultbrakepower)
+            SetAttMotor("BrakeRatio", defaultbrakeratio) 
+            SetAttMotor("Dampening", defaultdampening) 
+            SetAttMotor("Horsepower", defaulthorsepower) 
+            SetAttMotor("QuickShifter", defaultquickshifter)
+            SetAttMotor("TireGrip", defaulttiregrip) 
+            SetAttMotor("TopSpeed", defaulttopspeed)
+            setbrakepower = GetAttMotor("BrakePower") 
+            setbrakeratio = GetAttMotor("BrakeRatio")
+            setdampening = GetAttMotor("Dampening")
+            sethorsepower = GetAttMotor("Horsepower")
+            setquickshifter = GetAttMotor("QuickShifter")
+            settiregrip = GetAttMotor("TireGrip") 
+            settopspeed = GetAttMotor("TopSpeed")
+            AttributeParagraph:SetTitle("Bike: " .. SelectedBike)
+            AttributeParagraph:SetDesc(
+            "Brakepower  : " .. setbrakepower ..
+             "\nBrakeratio  : " .. setbrakeratio ..
+             "\nDampening   : " .. setdampening ..
+             "\nHorsepower  : " .. sethorsepower ..
+             "\nQuickshifter: " .. setquickshifter .. 
+             "\nTiregrip    : " .. settiregrip ..
+             "\nTopspeed    : " .. settopspeed)
+                     setbrakepowerslider:Set(setbrakepower)
+        setbrakeratioslider:Set(setbrakeratio)
+        setdampeningslider:Set(setdampening)
+        sethorsepowerslider:Set(sethorsepower)
+        setquickshifterslider:Set(setquickshifter)
+        settiregripslider:Set(settiregrip)
+        settopspeedslider:Set(settopspeed)
+        else
+            WindUI:Notify({
+                Title = "Attribute",
+                Content = "Please select bike first",
+                Duration = 3,
+                Icon = "triangle-alert",
+            }) 
+        end
+    end
+})
+
+local SelectedBikeSelect = AttributeTab:Dropdown({
+    Title = "Select bike",
+    Values = getBikeNames(),
+    Value = "not detected",
+    Callback = function(option) 
+        if SelectedBike ~= "not detected" then
+            SetAttMotor("BrakePower", defaultbrakepower)
+            SetAttMotor("BrakeRatio", defaultbrakeratio) 
+            SetAttMotor("Dampening", defaultdampening) 
+            SetAttMotor("Horsepower", defaulthorsepower) 
+            SetAttMotor("QuickShifter", defaultquickshifter)
+            SetAttMotor("TireGrip", defaulttiregrip) 
+            SetAttMotor("TopSpeed", defaulttopspeed)
+        end
+
+        SelectedBike = option
+        setbrakepower = GetAttMotor("BrakePower")
+        setbrakeratio = GetAttMotor("BrakeRatio")
+        setdampening = GetAttMotor("Dampening")
+        sethorsepower = GetAttMotor("Horsepower")
+        setquickshifter = GetAttMotor("QuickShifter")
+        settiregrip = GetAttMotor("TireGrip")
+        settopspeed = GetAttMotor("TopSpeed")
+        defaultbrakepower = GetAttMotor("BrakePower")
+        defaultbrakeratio = GetAttMotor("BrakeRatio")
+        defaultdampening = GetAttMotor("Dampening")
+        defaulthorsepower = GetAttMotor("Horsepower")
+        defaultquickshifter = GetAttMotor("QuickShifter")
+        defaulttiregrip = GetAttMotor("TireGrip")
+        defaulttopspeed = GetAttMotor("TopSpeed")
+
+        AttributeParagraph:SetTitle("Bike: " .. SelectedBike)
+        AttributeParagraph:SetDesc(
+        "Brakepower  : " .. setbrakepower ..
+        "\nBrakeratio  : " .. setbrakeratio ..
+        "\nDampening   : " .. setdampening ..
+        "\nHorsepower  : " .. sethorsepower ..
+        "\nQuickshifter: " .. setquickshifter .. 
+        "\nTiregrip    : " .. settiregrip ..
+        "\nTopspeed    : " .. settopspeed)
+
+        setbrakepowerslider:Set(setbrakepower)
+        setbrakeratioslider:Set(setbrakeratio)
+        setdampeningslider:Set(setdampening)
+        sethorsepowerslider:Set(sethorsepower)
+        setquickshifterslider:Set(setquickshifter)
+        settiregripslider:Set(settiregrip)
+        settopspeedslider:Set(settopspeed)
+    end
+})
+
+-- ========== Developer Tab ==========
+local function GetFormattedPivot()
+    -- Cek apakah variabel dasar tersedia
+    if not humanoid then
+        print("DEBUG: Humanoid tidak ditemukan")
+        return nil
+    end
+
+    if humanoid.SeatPart and humanoid.SeatPart:IsA("VehicleSeat") then
+        local vehicle = humanoid.SeatPart.Parent
+        local cf = vehicle:GetPivot()
+
+        -- Mengambil 12 komponen CFrame
+        local comp = {cf:GetComponents()}
+
+        -- Memformat secara manual (lebih aman daripada table.map)
+        local formatted = string.format(
+            "CFrame.new(%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f)",
+            comp[1], comp[2], comp[3], -- Posisi
+            comp[4], comp[5], comp[6], -- Matrix R0
+            comp[7], comp[8], comp[9], -- Matrix R1
+            comp[10], comp[11], comp[12] -- Matrix R2
+        )
+
+        print("DEBUG: Berhasil mendapatkan Pivot untuk: " .. vehicle.Name)
+        print("DEBUG: Data: " .. formatted)
+
+        return formatted, vehicle.Name
+    else
+        print("DEBUG: Pemain tidak sedang duduk di VehicleSeat")
+        return nil
+    end
+end
+
+DevTab:Paragraph({
+    Title = "PivotGrabber",
+    Buttons = {
+        {
+            Icon = "copy",
+            Title = "Get Pivot",
+            Callback = function()
+                print("DEBUG: Tombol ditekan, mencoba mengambil data...")
+                local pivotData, vehicleName = GetFormattedPivot()
+
+                if pivotData then
+
+                    local success, err = pcall(function()
+                        setclipboard(pivotData)
+                    end)
+
+                    if success then
+                        print("DEBUG: Berhasil menyalin ke clipboard!")
+                        WindUI:Notify({
+                            Title = "Pivot Grabber",
+                            Content = "CFrame " .. vehicleName .. " berhasil disalin!",
+                            Duration = 3,
+                            Icon = "check",
+                        })
+                    else
+                        print("DEBUG: Gagal menyalin ke clipboard. Error: " .. tostring(err))
+                    end
+                else
+                    WindUI:Notify({
+                        Title = "Pivot Grabber",
+                        Content = "Gagal! Pastikan kamu duduk di kendaraan.",
+                        Duration = 3,
+                    })
+                end
+            end,
+        }
+    }
+})
+
+-- TP TEST
+local tptestarea
+DevTab:Input({
+    Title = "TP TEST",
+    Value = "Default value",
+    Type = "Input", 
+    Callback = function(input) 
+        print("text entered: " .. input)
+        tptestarea = input
+    end
+})
+
+DevTab:Button({
+    Title = "TP",
+    Locked = false,
+    Callback = function()
+        if tptestarea and tptestarea ~= "" then
+            -- 1. Mengubah string input menjadi fungsi yang mengembalikan CFrame
+            -- Contoh input: "CFrame.new(1, 2, 3, ...)"
+            local success, result = pcall(function()
+                local func = loadstring("return " .. tptestarea)
+                return func()
+            end)
+
+            -- 2. Jika berhasil diubah jadi CFrame, jalankan teleport
+            if success and typeof(result) == "CFrame" then
+                local teleportSuccess = TeleportVehicle(result)
+
+                if teleportSuccess then
+                    WindUI:Notify({
+                        Title = "TP Berhasil",
+                        Content = "Kendaraan dipindahkan ke posisi matrix.",
+                        Duration = 3,
+                        Icon = "check"
+                    })
+                end
+            else
+                -- Jika input teksnya salah format (bukan CFrame)
+                print("DEBUG: Format CFrame salah!")
+                WindUI:Notify({
+                    Title = "Format Salah",
+                    Content = "Pastikan input diawali CFrame.new(...)",
+                    Duration = 3,
+                    Icon = "circle-x"
+                })
+            end
+        else
+            print("DEBUG: Input kosong")
+        end
+    end
+})
+
+-- ======= Client Tab =======
+ClientTab:Section({
+    Title = "Keybind",
+})
+
+local Keybind = ClientTab:Keybind({
+    Title = "Keybind",
+    Desc = "Keybind to open/close ui",
+    Value = "K",
+    Callback = function(v)
+        Window:SetToggleKey(Enum.KeyCode[v])
+    end
+})
+
+ClientTab:Section({
+    Title = "User Profile",
+})
+
+ClientTab:Toggle({
+    Title = "Profile Icon",
+    Desc = "Your profile on your left down",
+    Icon = "user",
+    Type = "Toggle",
+    Value = true,
+    Callback = function(state)
+        local stateinfo = state
+        if stateinfo then
+            Window.User:Enable()
+        else
+            Window.User:Disable()
+        end
+    end
+})
+
+ClientTab:Toggle({
+    Title = "Set Profile Anonymous",
+    Desc = "Your profile on your left down",
+    Icon = "hat-glasses",
+    Type = "Toggle",
+    Value = false,
+    Callback = function(state)
+        local stateinfo = state
+        if stateinfo then
+            Window.User:SetAnonymous(true)
+        else
+            Window.User:SetAnonymous(false)
+        end
+    end
+})
+
+ClientTab:Section({
+    Title = "Window",
+})
+
+ClientTab:Slider({
+    Title = "Transparency",
+    Step = 0.1,
+    Value = {
+        Min = 0,
+        Max = 1,
+        Default = 0.4,
+    },
+    Callback = function(value)
+        Window:SetBackgroundTransparency(value)
+    end
+})
+
+-- ===== Function Repeat =====
+-- AutoFarm
+task.spawn(function()
+    while true do
+        if AutoFarmStatus then
+            if MileFarmStatus then
+                MileFarmStatus = false
+                MileFarmStatusInfo:Set(false)
+            end
+
+            if not humanoid.Sit then
+                WindUI:Notify({
+                    Title = "AutoFarm",
+                    Content = "Player Must Sit On The Bike",
+                    Duration = 3,
+                    Icon = "triangle-alert",
+                })
+                AutoFarmStatusInfo:Set(false)
+                AutoFarmStatus = false
+            end
+
+            local mapData = MapCheckpoints[AutoFarmPlace]
+            if mapData then
+                local points = mapData.Points
+                local customDelay = mapData.DelayPerCheckpoint
+                local started = TeleportVehicle(points[1])
+
+                if started then
+                    WindUI:Notify({
+                        Title = "AutoFarm",
+                        Content = "Waiting The Race Start",
+                        Duration = 35,
+                        Icon = "loader-circle",
+                    })
+
+                    for i = 1, 35 do
+                        if AutoFarmStatus then
+                            task.wait(1)
+                        else
+
+                            continue 
+                        end
+                    end
+
+
+                    for i = 2, #points do
+                        if not AutoFarmStatus then break end 
+                        local success = TeleportVehicle(points[i])
+                        if not success then break end
+                        
+                        task.wait(0.5)
+                        if i < #points then
+                            WindUI:Notify({
+                                Title = "AutoFarm",
+                                Content = "Delay Teleport",
+                                Duration = customDelay,
+                                Icon = "loader-circle",
+                            })
+                            task.wait(customDelay)
+                        end
+                    end
+                else
+                    task.wait(2)
+                end
+            else
+                task.wait(1)
+            end
+        else
+            task.wait(1)
+        end
+        task.wait(0.1)
+    end
+end)
+
+-- MileFarm
+task.spawn(function()
+    while true do
+        if MileFarmStatus then
+            if AutoFarmStatus then
+                AutoFarmStatus = false
+                AutoFarmStatusInfo:Set(false)
+            end
+
+            if not humanoid.Sit then
+                WindUI:Notify({
+                    Title = "Milefarm",
+                    Content = "Player Must Sit On The Bike",
+                    Duration = 3,
+                    Icon = "triangle-alert",
+                })
+                MileFarmStatusInfo:Set(false)
+                MileFarmStatus = false
+            end
+            FarmTeleport()
+        end
+        task.wait(MileFarmInterval)
+    end
+end)
+
+-- function that use RunService
+RunService.Stepped:Connect(function(dt)
+    if not humanoidroot or not humanoidroot.Parent then return end
+
+    local seat = GetDriveSeat()
+    local velocity = humanoidroot.AssemblyLinearVelocity
+    local speedMagnitude = velocity.Magnitude
+    local isSitting = humanoid and humanoid.Sit
+    local look = humanoidroot.CFrame.LookVector
+    local forwardDir = Vector3.new(look.X, 0, look.Z).Unit
+
+
+    if isSitting and seat then
+        
+        -- [Brake Boost]
+        local isBrakePressed = seat.Throttle == -1
+        if BrakeBoostStatus and isBrakePressed and speedMagnitude > 0.1 then
+            local reduction = BrakeBoost * dt * 0.0002
+            local newSpeed = math.max(0, speedMagnitude - reduction)
+            velocity = Vector3.new(velocity.Unit.X * newSpeed, velocity.Y, velocity.Unit.Z * newSpeed)
+            speedMagnitude = newSpeed
+            humanoidroot.AssemblyLinearVelocity = velocity
+        end
+
+        -- [Mile Farm VS Speed Boost]
+        if MileFarmStatus then
+            local dot = (speedMagnitude > 0.1) and velocity.Unit:Dot(forwardDir) or 1
+            if dot > 0 then
+                FarmCurrentSpeed = math.max(FarmCurrentSpeed, speedMagnitude)
+            else
+                FarmCurrentSpeed = 0
+            end
+            local accelStep = FarmMaxSpeed / (FarmAccel * 100)
+            FarmCurrentSpeed = math.min(FarmCurrentSpeed + accelStep, FarmMaxSpeed)
+            local moveDir = (speedMagnitude > 0.5 and dot > 0.5) and velocity.Unit or forwardDir
+            humanoidroot.AssemblyLinearVelocity = velocity:Lerp(Vector3.new(moveDir.X * FarmCurrentSpeed, velocity.Y, moveDir.Z * FarmCurrentSpeed), 0.15)
+
+        elseif SpeedBoostStatus then
+            local isGasPressed = (seat.Throttle == 1) or AutoGasStatus
+            if isGasPressed then
+                local dot = (speedMagnitude > 0.1) and velocity.Unit:Dot(forwardDir) or 1
+                SpeedBoostCurrentSpeed = (dot > 0) and math.max(SpeedBoostCurrentSpeed, speedMagnitude) or 0
+                local accelStep = SpeedBoostMaxSpeed / (SpeedBoostAcceleration * 100)
+                SpeedBoostCurrentSpeed = math.min(SpeedBoostCurrentSpeed + accelStep, SpeedBoostMaxSpeed)
+                local moveDir = (speedMagnitude > 0.5 and dot > 0.5) and velocity.Unit or forwardDir
+                humanoidroot.AssemblyLinearVelocity = velocity:Lerp(Vector3.new(moveDir.X * SpeedBoostCurrentSpeed, velocity.Y, moveDir.Z * SpeedBoostCurrentSpeed), 0.15)
+            else
+                SpeedBoostCurrentSpeed = speedMagnitude
+            end
+        end
+
+    else
+        SpeedBoostCurrentSpeed = 0
+        FarmCurrentSpeed = 0
+    end
+end)
